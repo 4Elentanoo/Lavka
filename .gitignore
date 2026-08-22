@@ -1,0 +1,59 @@
+# Файлы и папки самого Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Веб-сборка
+lib/generated_plugin_images.html
+
+# Файлы конфигурации пакетов (удалены в новых версиях, но полезны для старых)
+pubspec.lock
+
+# Android-специфичные файлы
+.gradle/
+local.properties
+**/android/**.iml
+**/android/local.properties
+**/android/generated/
+**/android/app/src/main/res/values/strings.xml
+
+# Секретные ключи для подписи Android (нельзя пушить в репозиторий)
+*.jks
+*.keystore
+**/android/key.properties
+
+# iOS/macOS-специфичные файлы
+**/ios/.generated/
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/Ephemera/
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/flutter_export_environment.sh
+**/macOS/Flutter/Generated.xcconfig
+.形状/
+xcode_backend.sh
+
+# Логи и кэш CocoaPods
+.symlinks/
+Pods/
+Podfile.lock
+DerivedData/
+
+# Веб-артефакты
+build/web/
+
+# Настройки Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Настройки Visual Studio Code
+.vscode/
+
+# Системные файлы операционных систем
+.DS_Store
+Thumbs.db
