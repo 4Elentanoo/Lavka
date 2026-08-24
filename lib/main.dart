@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lavka_shop/core/models/cart_model.dart';
+import 'package:lavka_shop/modules/cart/page/cart_page.dart';
 import 'package:lavka_shop/modules/demo_data/demo_products.dart';
 import 'package:lavka_shop/modules/main_page/widgets/item_cart.dart';
 
@@ -68,7 +69,11 @@ class CartBadge extends StatelessWidget {
           child: Stack(
             children: [
               IconButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const CartScreen()),
+                  );
+                },
                 icon: const Icon(Icons.shopping_bag_rounded),
               ),
               if (count > 0)
@@ -100,103 +105,18 @@ class CartBadge extends StatelessWidget {
   }
 }
 
-class QtySelector extends StatefulWidget {
-  const QtySelector({
-    super.key,
-    required this.cart,
-    required this.productId,
-    required this.builder,
-  });
-
-  final CartModel cart;
-  final String productId;
-  final Widget Function(BuildContext context, int qty) builder;
-
-  @override
-  State<QtySelector> createState() => _QtySelectorState();
-}
-
-class _QtySelectorState extends State<QtySelector> {
-  late int _qty;
-
-  @override
-  void initState() {
-    super.initState();
-    _qty = widget.cart.qtyOf(widget.productId);
-    widget.cart.addListener(_onCartChanged);
-  }
-
-  void _onCartChanged() {
-    final next = widget.cart.qtyOf(widget.productId);
-    if (next != _qty) {
-      // ← вот вся суть: сравнили, и только тогда setState
-      setState(() => _qty = next);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.cart.removeListener(_onCartChanged);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.builder(context, _qty);
-}
-
-class MainStorePage extends StatefulWidget {
+class MainStorePage extends StatelessWidget {
   const MainStorePage({super.key});
 
   @override
-  State<MainStorePage> createState() => _MainStorePageState();
-}
-
-class _MainStorePageState extends State<MainStorePage> {
-  @override
   Widget build(BuildContext context) {
-    final cart = CartScope.of(context).cart;
-
     return Scaffold(
-      floatingActionButton: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          shape: const CircleBorder(),
-          padding: const EdgeInsets.all(15),
-        ),
-        onPressed: () {
-          //? add demo data
-          // CartScope.read(context).cart.add(
-          //   Product(
-          //     id: 'id',
-          //     title: 'title',
-          //     description: 'description',
-          //     price: 1,
-          //     category: 'category',
-          //   ),
-          // );
-        },
-        child: Icon(Icons.add, size: 30),
-      ),
       appBar: AppBar(
-        title: Text('Lavka'),
+        title: const Text('Lavka'),
         centerTitle: false,
         surfaceTintColor: Colors.transparent,
         backgroundColor: Colors.white,
-        actions: [
-          SizedBox(
-            width: 50,
-            height: 50,
-            child: Stack(
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.shopping_bag_rounded),
-                ),
-                CartBadge(),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-        ],
+        actions: [const CartBadge(), const SizedBox(width: 10)],
       ),
       body: Container(
         width: MediaQuery.of(context).size.width,
@@ -206,35 +126,13 @@ class _MainStorePageState extends State<MainStorePage> {
         child: Column(
           children: [
             Expanded(
-              child: ListenableBuilder(
-                listenable: cart,
-                builder: (context, value) {
-                  return GridView.count(
-                    crossAxisCount: 1,
-                    physics: BouncingScrollPhysics(),
-                    children: List.generate(
-                      CartScope.read(context).cart.items.length,
-                      (index) {
-                        final product = demoProducts[index];
-                        return QtySelector(
-                          cart: CartScope.of(context).cart,
-                          productId: product.id,
-                          builder: (context, qty) {
-                            debugPrint('  qty builder для ${product.id}');
-                            return ItemCartWidget();
-                            //  qty == 0
-                            //     ? ElevatedButton(
-                            //         onPressed: () => cart.add(product),
-                            //         child: const Text('В корзину'),
-                            //       )
-                            //     : Row(children: [/* − qty + */]);
-                          },
-                        );
-                        // return ItemCartWidget();
-                      },
-                    ),
-                  );
-                },
+              child: ListView.builder(
+                itemCount: demoProducts.length,
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, i) => ItemCartWidget(
+                  key: ValueKey(demoProducts[i].id),
+                  product: demoProducts[i],
+                ),
               ),
             ),
           ],
