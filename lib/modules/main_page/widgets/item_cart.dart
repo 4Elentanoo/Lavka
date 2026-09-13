@@ -4,10 +4,9 @@ import 'package:lavka_shop/core/models/qty_selector.dart';
 import 'package:lavka_shop/main.dart';
 
 class ItemCartWidget extends StatefulWidget {
-  const ItemCartWidget({super.key, required this.product, this.isCart = false});
+  const ItemCartWidget({super.key, required this.product});
 
   final Product product;
-  final bool isCart;
 
   @override
   State<ItemCartWidget> createState() => _ItemCartWidgetState();
@@ -37,7 +36,7 @@ class _ItemCartWidgetState extends State<ItemCartWidget>
     super.dispose();
   }
 
-  void expand() {
+  void _expand() {
     _controller.isForwardOrCompleted
         ? _controller.reverse()
         : _controller.forward();
@@ -46,64 +45,66 @@ class _ItemCartWidgetState extends State<ItemCartWidget>
   @override
   Widget build(BuildContext context) {
     debugPrint('ItemCartWidget.build ${widget.product.id}');
+    final product = widget.product;
+
     return GestureDetector(
-      onTap: expand,
+      onTap: _expand,
       child: Container(
-        color: Colors.grey,
-        margin: const EdgeInsets.all(10),
-        padding: EdgeInsets.all(10),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade400,
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    widget.product.title,
+                    product.title,
                     style: const TextStyle(color: Colors.white, fontSize: 20),
                   ),
                 ),
-                if (widget.isCart) ...[
-                  IconButton(
-                    onPressed: () =>
-                        CartScope.of(context).cart.remove(widget.product.id),
-                    icon: Icon(Icons.delete),
-                  ),
-                ],
+                Text(
+                  '${product.price} ₽',
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             SizeTransition(
               sizeFactor: _animation,
-              child: Row(
-                children: [Expanded(child: Text(widget.product.description))],
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(product.description),
               ),
             ),
             QtySelector(
               cart: CartScope.of(context).cart,
-              productId: widget.product.id,
+              productId: product.id,
               builder: (context, qty) {
-                debugPrint('  qty builder для ${widget.product.id}');
+                debugPrint('  qty builder для ${product.id}');
+                final cart = CartScope.read(context).cart;
+
                 if (qty == 0) {
                   return ElevatedButton(
-                    onPressed: () =>
-                        CartScope.read(context).cart.add(widget.product),
+                    onPressed: () => cart.add(product),
                     child: const Text('В корзину'),
                   );
                 }
+
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      onPressed: () => CartScope.read(
-                        context,
-                      ).cart.changeQty(widget.product.id, -1),
+                      onPressed: () => cart.changeQty(product.id, -1),
                       icon: const Icon(Icons.remove),
                     ),
-                    Text('$qty'),
+                    Text('$qty', style: const TextStyle(fontSize: 18)),
                     IconButton(
-                      onPressed: () => CartScope.read(
-                        context,
-                      ).cart.changeQty(widget.product.id, 1),
+                      onPressed: () => cart.changeQty(product.id, 1),
                       icon: const Icon(Icons.add),
                     ),
                   ],
