@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lavka_shop/core/models/cart_item_model.dart';
-import 'package:lavka_shop/main.dart';
+import 'package:lavka_shop/core/models/cart_model.dart';
+import 'package:provider/provider.dart';
 
 class CartItemTile extends StatelessWidget {
   const CartItemTile({super.key, required this.item});
@@ -10,7 +11,7 @@ class CartItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint('CartItemTile.build ${item.product.id}');
-    final cart = CartScope.read(context).cart;
+    final cart = context.read<CartModel>();
     final product = item.product;
 
     return Container(

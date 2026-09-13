@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
 import 'package:lavka_shop/main.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   const product = Product(
@@ -14,9 +15,9 @@ void main() {
   );
 
   Widget wrap(CartModel cart, Widget child) {
-    return CartScope(
-      cart: cart,
-      child: MaterialApp(home: Scaffold(body: child)),
+    return ChangeNotifierProvider.value(
+      value: cart, // ← твой объект
+      child: MaterialApp(home: Scaffold(body: child)), // ← твой виджет
     );
   }
 

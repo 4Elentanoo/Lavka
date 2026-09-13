@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
-import 'package:lavka_shop/core/models/qty_selector.dart';
 import 'package:lavka_shop/main.dart';
 import 'package:lavka_shop/modules/main_page/widgets/item_cart.dart';
+import 'package:provider/provider.dart';
 
 class BuildCounter extends StatelessWidget {
   const BuildCounter({super.key, required this.onBuild, required this.child});
@@ -35,10 +35,12 @@ void main() {
     category: 'Посуда',
   );
 
-  Widget wrap(CartModel cart, Widget child) => CartScope(
-    cart: cart,
-    child: MaterialApp(home: Scaffold(body: child)),
-  );
+  Widget wrap(CartModel cart, Widget child) {
+    return ChangeNotifierProvider.value(
+      value: cart, // ← твой объект
+      child: MaterialApp(home: Scaffold(body: child)), // ← твой виджет
+    );
+  }
 
   testWidgets('тап по "В корзину" добавляет товар', (tester) async {
     final cart = CartModel();
@@ -76,10 +78,12 @@ void main() {
     var buildsP2 = 0;
 
     // локальная копия того, что делает ItemCartWidget: селектор + счётчик
-    Widget probe(Product p, VoidCallback onBuild) => QtySelector(
-      cart: cart,
-      productId: p.id,
-      builder: (context, qty) {
+    Widget probe(Product p, VoidCallback onBuild) => Selector<CartModel, int>(
+      //? что выбираем
+      selector: (context, cart) => cart.qtyOf(p.id),
+      builder: (context, qty, child) {
+        debugPrint('  qty builder для ${p.id}');
+        final cart = context.read<CartModel>();
         onBuild();
         return qty == 0
             ? ElevatedButton(

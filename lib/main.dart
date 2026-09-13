@@ -3,52 +3,20 @@ import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/modules/cart/page/cart_page.dart';
 import 'package:lavka_shop/modules/demo_data/demo_products.dart';
 import 'package:lavka_shop/modules/main_page/widgets/item_cart.dart';
+import 'package:provider/provider.dart';
 
 void main() => runApp(const App());
 
-class App extends StatefulWidget {
+class App extends StatelessWidget {
   const App({super.key});
-  @override
-  State<App> createState() => _AppState();
-}
-
-class _AppState extends State<App> {
-  final CartModel _cart = CartModel();
-
-  @override
-  void dispose() {
-    _cart.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    return CartScope(
-      cart: _cart,
+    return ChangeNotifierProvider(
+      create: (_) => CartModel(),
       child: const MaterialApp(home: MainStorePage()),
     );
   }
-}
-
-class CartScope extends InheritedWidget {
-  const CartScope({super.key, required this.cart, required super.child});
-
-  final CartModel cart;
-
-  static CartScope of(BuildContext context) {
-    final res = context.dependOnInheritedWidgetOfExactType<CartScope>();
-    assert(res != null, 'CartScope не найден выше по дереву');
-    return res!;
-  }
-
-  static CartScope read(BuildContext context) {
-    final res = context.getInheritedWidgetOfExactType<CartScope>();
-    assert(res != null, 'CartScope не найден выше по дереву');
-    return res!;
-  }
-
-  @override
-  bool updateShouldNotify(CartScope oldWidget) => oldWidget.cart != cart;
 }
 
 class CartBadge extends StatelessWidget {
@@ -57,50 +25,42 @@ class CartBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint('CartBadge.build');
-    final cart = CartScope.of(context).cart;
-    return ListenableBuilder(
-      listenable: cart,
-      builder: (context, _) {
-        debugPrint('  CartBadge builder');
-        final count = cart.totalCount;
-        return SizedBox(
-          width: 50,
-          height: 50,
-          child: Stack(
-            children: [
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const CartScreen()),
-                  );
-                },
-                icon: const Icon(Icons.shopping_bag_rounded),
-              ),
-              if (count > 0)
-                Align(
-                  alignment: Alignment.topRight,
-                  child: Container(
-                    width: 25,
-                    height: 25,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        count > 99 ? '99+' : '$count',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
+
+    final cart = context.watch<CartModel>();
+
+    return SizedBox(
+      width: 50,
+      height: 50,
+      child: Stack(
+        children: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const CartScreen()),
+              );
+            },
+            icon: const Icon(Icons.shopping_bag_rounded),
+          ),
+          if (cart.totalCount > 0)
+            Align(
+              alignment: Alignment.topRight,
+              child: Container(
+                width: 25,
+                height: 25,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    cart.totalCount > 99 ? '99+' : '${cart.totalCount}',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),
-            ],
-          ),
-        );
-      },
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

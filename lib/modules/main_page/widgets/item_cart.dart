@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
-import 'package:lavka_shop/core/models/qty_selector.dart';
-import 'package:lavka_shop/main.dart';
+import 'package:provider/provider.dart';
 
 class ItemCartWidget extends StatefulWidget {
   const ItemCartWidget({super.key, required this.product});
@@ -81,12 +81,12 @@ class _ItemCartWidgetState extends State<ItemCartWidget>
                 child: Text(product.description),
               ),
             ),
-            QtySelector(
-              cart: CartScope.of(context).cart,
-              productId: product.id,
-              builder: (context, qty) {
+            Selector<CartModel, int>(
+              //? что выбираем
+              selector: (context, cart) => cart.qtyOf(product.id),
+              builder: (context, qty, child) {
                 debugPrint('  qty builder для ${product.id}');
-                final cart = CartScope.read(context).cart;
+                final cart = context.read<CartModel>();
 
                 if (qty == 0) {
                   return ElevatedButton(
