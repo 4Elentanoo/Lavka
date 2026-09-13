@@ -36,6 +36,20 @@ class _QtySelectorState extends State<QtySelector> {
   }
 
   @override
+  void didUpdateWidget(covariant QtySelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    //? Если модель поменяется widget.cart
+    //? !identical(oldWidget.cart, widget.cart) -> сравнение только ссылок
+    //? игнорирует переопределённые операторы ==
+    if (oldWidget.cart != widget.cart) {
+      oldWidget.cart.removeListener(_onCartChanged);
+      _qty = widget.cart.qtyOf(widget.productId);
+      widget.cart.addListener(_onCartChanged);
+    }
+  }
+
+  @override
   void dispose() {
     widget.cart.removeListener(_onCartChanged);
     super.dispose();
