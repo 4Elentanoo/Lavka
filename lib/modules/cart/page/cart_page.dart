@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:lavka_shop/core/models/cart_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 import 'package:lavka_shop/modules/cart/widgets/cart_item_tile.dart';
-import 'package:provider/provider.dart';
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final cart = context.watch<CartModel>();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(cartProvider);
     final items = cart.items;
     return Scaffold(
       appBar: AppBar(

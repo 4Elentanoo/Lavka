@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavka_shop/core/models/cart_item_model.dart';
-import 'package:lavka_shop/core/models/cart_model.dart';
-import 'package:provider/provider.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 
-class CartItemTile extends StatelessWidget {
+class CartItemTile extends ConsumerWidget {
   const CartItemTile({super.key, required this.item});
 
   final CartItem item;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('CartItemTile.build ${item.product.id}');
-    final cart = context.read<CartModel>();
     final product = item.product;
 
     return Container(
@@ -40,16 +39,16 @@ class CartItemTile extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () => cart.changeQty(product.id, -1),
+            onPressed: () => ref.read(cartProvider).changeQty(product.id, -1),
             icon: const Icon(Icons.remove),
           ),
           Text('${item.qty}', style: const TextStyle(fontSize: 16)),
           IconButton(
-            onPressed: () => cart.changeQty(product.id, 1),
+            onPressed: () => ref.read(cartProvider).changeQty(product.id, 1),
             icon: const Icon(Icons.add),
           ),
           IconButton(
-            onPressed: () => cart.remove(product.id),
+            onPressed: () => ref.read(cartProvider).remove(product.id),
             icon: const Icon(Icons.delete_outline),
             color: Colors.red.shade400,
           ),

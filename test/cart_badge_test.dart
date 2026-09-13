@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 import 'package:lavka_shop/main.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   const product = Product(
@@ -15,9 +16,13 @@ void main() {
   );
 
   Widget wrap(CartModel cart, Widget child) {
-    return ChangeNotifierProvider.value(
-      value: cart, // ← твой объект
-      child: MaterialApp(home: Scaffold(body: child)), // ← твой виджет
+    return ProviderScope(
+      overrides: [
+        cartProvider.overrideWith(
+          (ref) => cart,
+        ), // ← подменяем на свой экземпляр
+      ],
+      child: MaterialApp(home: Scaffold(body: child)),
     );
   }
 

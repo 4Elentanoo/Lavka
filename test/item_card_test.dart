@@ -1,23 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
-import 'package:lavka_shop/main.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
+
 import 'package:lavka_shop/modules/main_page/widgets/item_cart.dart';
-import 'package:provider/provider.dart';
-
-class BuildCounter extends StatelessWidget {
-  const BuildCounter({super.key, required this.onBuild, required this.child});
-
-  final VoidCallback onBuild;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    onBuild();
-    return child;
-  }
-}
 
 void main() {
   const p1 = Product(
@@ -36,9 +24,9 @@ void main() {
   );
 
   Widget wrap(CartModel cart, Widget child) {
-    return ChangeNotifierProvider.value(
-      value: cart, // ← твой объект
-      child: MaterialApp(home: Scaffold(body: child)), // ← твой виджет
+    return ProviderScope(
+      overrides: [cartProvider.overrideWith((ref) => cart)],
+      child: MaterialApp(home: Scaffold(body: child)),
     );
   }
 
@@ -78,16 +66,13 @@ void main() {
     var buildsP2 = 0;
 
     // локальная копия того, что делает ItemCartWidget: селектор + счётчик
-    Widget probe(Product p, VoidCallback onBuild) => Selector<CartModel, int>(
-      //? что выбираем
-      selector: (context, cart) => cart.qtyOf(p.id),
-      builder: (context, qty, child) {
-        debugPrint('  qty builder для ${p.id}');
-        final cart = context.read<CartModel>();
+    Widget probe(Product p, VoidCallback onBuild) => Consumer(
+      builder: (context, ref, child) {
+        final qty = ref.watch(cartProvider.select((c) => c.qtyOf(p.id)));
         onBuild();
         return qty == 0
             ? ElevatedButton(
-                onPressed: () => cart.add(p),
+                onPressed: () => ref.read(cartProvider).add(p),
                 child: Text('В корзину ${p.id}'),
               )
             : Text('${p.id}: $qty');

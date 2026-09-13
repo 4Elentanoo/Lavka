@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:lavka_shop/core/models/cart_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavka_shop/core/models/product.dart';
-import 'package:provider/provider.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 
-class ItemCartWidget extends StatefulWidget {
+class ItemCartWidget extends ConsumerStatefulWidget {
   const ItemCartWidget({super.key, required this.product});
-
   final Product product;
 
   @override
-  State<ItemCartWidget> createState() => _ItemCartWidgetState();
+  ConsumerState<ItemCartWidget> createState() => _ItemCartWidgetState();
 }
 
-class _ItemCartWidgetState extends State<ItemCartWidget>
+class _ItemCartWidgetState extends ConsumerState<ItemCartWidget>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _animation;
@@ -81,39 +80,43 @@ class _ItemCartWidgetState extends State<ItemCartWidget>
                 child: Text(product.description),
               ),
             ),
-            Selector<CartModel, int>(
-              //? что выбираем
-              selector: (context, cart) => cart.qtyOf(product.id),
-              builder: (context, qty, child) {
-                debugPrint('  qty builder для ${product.id}');
-                final cart = context.read<CartModel>();
-
-                if (qty == 0) {
-                  return ElevatedButton(
-                    onPressed: () => cart.add(product),
-                    child: const Text('В корзину'),
-                  );
-                }
-
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: () => cart.changeQty(product.id, -1),
-                      icon: const Icon(Icons.remove),
-                    ),
-                    Text('$qty', style: const TextStyle(fontSize: 18)),
-                    IconButton(
-                      onPressed: () => cart.changeQty(product.id, 1),
-                      icon: const Icon(Icons.add),
-                    ),
-                  ],
-                );
-              },
-            ),
+            QtyControls(product: product),
           ],
         ),
       ),
     );
+  }
+}
+
+class QtyControls extends ConsumerWidget {
+  const QtyControls({super.key, required this.product});
+  final Product product;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final qty = ref.watch(cartProvider.select((c) => c.qtyOf(product.id)));
+
+    debugPrint('  qty builder для ${product.id}');
+    if (qty == 0) {
+      return ElevatedButton(
+        onPressed: () => ref.read(cartProvider).add(product),
+        child: const Text('В корзину'),
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            onPressed: () => ref.read(cartProvider).changeQty(product.id, -1),
+            icon: const Icon(Icons.remove),
+          ),
+          Text('$qty', style: const TextStyle(fontSize: 18)),
+          IconButton(
+            onPressed: () => ref.read(cartProvider).changeQty(product.id, 1),
+            icon: const Icon(Icons.add),
+          ),
+        ],
+      );
+    }
   }
 }

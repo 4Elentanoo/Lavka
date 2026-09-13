@@ -1,32 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:lavka_shop/core/models/cart_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 import 'package:lavka_shop/modules/cart/page/cart_page.dart';
 import 'package:lavka_shop/modules/demo_data/demo_products.dart';
 import 'package:lavka_shop/modules/main_page/widgets/item_cart.dart';
-import 'package:provider/provider.dart';
 
-void main() => runApp(const App());
+void main() => runApp(const ProviderScope(child: App()));
 
 class App extends StatelessWidget {
   const App({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => CartModel(),
-      child: const MaterialApp(home: MainStorePage()),
-    );
+    return const MaterialApp(home: MainStorePage());
   }
 }
 
-class CartBadge extends StatelessWidget {
+class CartBadge extends ConsumerWidget {
   const CartBadge({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('CartBadge.build');
-
-    final cart = context.watch<CartModel>();
+    final cart = ref.watch(cartProvider);
 
     return SizedBox(
       width: 50,
