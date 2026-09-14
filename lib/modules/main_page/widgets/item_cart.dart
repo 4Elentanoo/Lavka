@@ -2,52 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavka_shop/core/models/product.dart';
 import 'package:lavka_shop/core/providers/cart_provider.dart';
+import 'package:lavka_shop/modules/detail_item_page/detail_item_page.dart';
 
-class ItemCartWidget extends ConsumerStatefulWidget {
+class ItemCartWidget extends StatelessWidget {
   const ItemCartWidget({super.key, required this.product});
   final Product product;
 
   @override
-  ConsumerState<ItemCartWidget> createState() => _ItemCartWidgetState();
-}
-
-class _ItemCartWidgetState extends ConsumerState<ItemCartWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.linearToEaseOut,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _expand() {
-    _controller.isForwardOrCompleted
-        ? _controller.reverse()
-        : _controller.forward();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    debugPrint('ItemCartWidget.build ${widget.product.id}');
-    final product = widget.product;
-
     return GestureDetector(
-      onTap: _expand,
+      onTap: () => Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => DetailItemPage(productId: product.id),
+        ),
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.all(12),
@@ -73,13 +41,6 @@ class _ItemCartWidgetState extends ConsumerState<ItemCartWidget>
               ],
             ),
             const SizedBox(height: 12),
-            SizeTransition(
-              sizeFactor: _animation,
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(product.description),
-              ),
-            ),
             QtyControls(product: product),
           ],
         ),
