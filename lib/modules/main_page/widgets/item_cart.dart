@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
-import 'package:lavka_shop/core/providers/cart_provider.dart';
 import 'package:lavka_shop/modules/detail_item_page/detail_item_page.dart';
 
 class ItemCartWidget extends StatelessWidget {
@@ -55,12 +55,12 @@ class QtyControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final qty = ref.watch(cartProvider.select((c) => c.qtyOf(product.id)));
+    final qty = ref.watch(cartQtyProvider(product.id));
 
     debugPrint('  qty builder для ${product.id}');
     if (qty == 0) {
       return ElevatedButton(
-        onPressed: () => ref.read(cartProvider).add(product),
+        onPressed: () => ref.read(cartProvider.notifier).add(product),
         child: const Text('В корзину'),
       );
     } else {
@@ -68,12 +68,14 @@ class QtyControls extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            onPressed: () => ref.read(cartProvider).changeQty(product.id, -1),
+            onPressed: () =>
+                ref.read(cartProvider.notifier).changeQty(product.id, -1),
             icon: const Icon(Icons.remove),
           ),
           Text('$qty', style: const TextStyle(fontSize: 18)),
           IconButton(
-            onPressed: () => ref.read(cartProvider).changeQty(product.id, 1),
+            onPressed: () =>
+                ref.read(cartProvider.notifier).changeQty(product.id, 1),
             icon: const Icon(Icons.add),
           ),
         ],

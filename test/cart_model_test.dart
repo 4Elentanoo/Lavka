@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
@@ -19,81 +20,112 @@ void main() {
     category: 'Посуда',
   );
 
-  test('пустая корзина: totalCount и totalPrice равны нулю', () {
-    final cart = CartModel();
+  /// Свежий контейнер на каждый тест — изоляция.
+  ProviderContainer makeContainer() {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    return container;
+  }
 
-    expect(cart.totalCount, 0);
-    expect(cart.totalPrice, 0);
-    expect(cart.items, isEmpty);
+  test('пустая корзина: totalCount и totalPrice равны нулю', () {
+    final c = makeContainer();
+
+    expect(c.read(cartTotalCountProvider), 0);
+    expect(c.read(cartTotalPriceProvider), 0);
+    expect(c.read(cartItemsProvider), isEmpty);
   });
 
   test('add кладёт товар с количеством 1', () {
-    final cart = CartModel();
+    final c = makeContainer();
 
-    cart.add(product);
+    c.read(cartProvider.notifier).add(product);
 
-    expect(cart.totalCount, 1);
-    expect(cart.qtyOf('p1'), 1);
-    expect(cart.totalPrice, 100);
+    expect(c.read(cartTotalCountProvider), 1);
+    expect(c.read(cartQtyProvider('p1')), 1);
+    expect(c.read(cartTotalPriceProvider), 100);
   });
 
   test('add дважды на один товар → qty равен 2', () {
-    final cart = CartModel();
+    final c = makeContainer();
+    final cart = c.read(cartProvider.notifier);
 
     cart.add(product);
     cart.add(product);
 
-    expect(cart.qtyOf('p1'), 2);
-    expect(cart.totalCount, 2);
-    expect(cart.totalPrice, 200);
-    expect(cart.items, hasLength(1));
+    expect(c.read(cartQtyProvider('p1')), 2);
+    expect(c.read(cartTotalCountProvider), 2);
+    expect(c.read(cartTotalPriceProvider), 200);
+    expect(c.read(cartItemsProvider), hasLength(1));
   });
 
   test('changeQty(-1) при qty == 1 удаляет позицию', () {
-    final cart = CartModel();
+    final c = makeContainer();
+    final cart = c.read(cartProvider.notifier);
 
     cart.add(product);
-    cart.changeQty(product.id, -1);
+    cart.changeQty('p1', -1);
 
-    expect(cart.items.isEmpty, true);
-    expect(cart.qtyOf('p1'), 0);
+    expect(c.read(cartItemsProvider), isEmpty);
+    expect(c.read(cartQtyProvider('p1')), 0);
   });
 
   test('changeQty для несуществующего товара не падает', () {
-    final cart = CartModel();
+    final c = makeContainer();
 
-    cart.changeQty(product.id, -1);
+    c.read(cartProvider.notifier).changeQty('p1', -1);
 
-    expect(cart.items, isEmpty);
-    expect(cart.qtyOf('p1'), 0);
+    expect(c.read(cartItemsProvider), isEmpty);
+    expect(c.read(cartQtyProvider('p1')), 0);
   });
 
   test('remove удаляет позицию целиком независимо от qty', () {
-    final cart = CartModel();
+    final c = makeContainer();
+    final cart = c.read(cartProvider.notifier);
 
     cart.add(product);
-    cart.remove(product.id);
+    cart.add(product);
+    cart.add(product);
+    cart.remove('p1');
 
-    expect(cart.qtyOf(product.id), 0);
+    expect(c.read(cartQtyProvider('p1')), 0);
+    expect(c.read(cartItemsProvider), isEmpty);
+    expect(c.read(cartTotalCountProvider), 0);
   });
 
   test('totalPrice считает сумму по разным товарам', () {
-    final cart = CartModel();
+    final c = makeContainer();
+    final cart = c.read(cartProvider.notifier);
 
     cart.add(product);
     cart.add(product2);
 
-    expect(cart.totalCount, 2);
-    expect(cart.items, hasLength(2));
-    expect(cart.totalPrice, 350);
+    expect(c.read(cartTotalCountProvider), 2);
+    expect(c.read(cartItemsProvider), hasLength(2));
+    expect(c.read(cartTotalPriceProvider), 350);
   });
 
   test('changeQty(+1) увеличивает существующую позицию', () {
-    final cart = CartModel();
+    final c = makeContainer();
+    final cart = c.read(cartProvider.notifier);
 
     cart.add(product);
-    cart.changeQty(product.id, 1);
+    cart.changeQty('p1', 1);
 
-    expect(cart.qtyOf(product.id), 2);
+    expect(c.read(cartQtyProvider('p1')), 2);
+  });
+
+  test('state не мутируется: старая мапа остаётся прежней', () {
+    final c = makeContainer();
+    final cart = c.read(cartProvider.notifier);
+
+    cart.add(product);
+    final before = c.read(cartProvider); // ссылка на текущую мапу
+
+    cart.add(product2);
+    final after = c.read(cartProvider);
+
+    expect(identical(before, after), isFalse, reason: 'должна быть новая мапа');
+    expect(before, hasLength(1), reason: 'старая мапа не должна измениться');
+    expect(after, hasLength(2));
   });
 }

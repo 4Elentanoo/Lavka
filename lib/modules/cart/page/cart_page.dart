@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lavka_shop/core/providers/cart_provider.dart';
+import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/modules/cart/widgets/cart_item_tile.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -8,8 +8,8 @@ class CartScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cart = ref.watch(cartProvider);
-    final items = cart.items;
+    final cartItems = ref.watch(cartItemsProvider);
+    final cartTotalPrice = ref.watch(cartTotalPriceProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Корзина'),
@@ -22,15 +22,15 @@ class CartScreen extends ConsumerWidget {
           color: Colors.white,
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: items.isEmpty
+            child: cartItems.isEmpty
                 ? const Center(child: Text('Корзина пуста'))
                 : Column(
                     children: [
                       Expanded(
                         child: ListView.builder(
-                          itemCount: items.length,
+                          itemCount: cartItems.length,
                           itemBuilder: (context, i) {
-                            final item = items[i];
+                            final item = cartItems[i];
                             return CartItemTile(
                               key: ValueKey(item.product.id),
                               item: item,
@@ -40,7 +40,7 @@ class CartScreen extends ConsumerWidget {
                       ),
                       Row(
                         children: [
-                          Expanded(child: Text('Итого: ${cart.totalPrice} ₽')),
+                          Expanded(child: Text('Итого: $cartTotalPrice ₽')),
                         ],
                       ),
                       const SizedBox(height: 20),

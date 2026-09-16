@@ -1,48 +1,81 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavka_shop/core/models/cart_item_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
 
-class CartModel extends ChangeNotifier {
-  final Map<String, CartItem> _items = {};
+final cartTotalCountProvider = Provider<int>((ref) {
+  final items = ref.watch(cartProvider);
+  return items.values.fold(0, (s, i) => s + i.qty);
+});
 
-  // неизменяемый наружу
-  List<CartItem> get items => List.unmodifiable(_items.values);
+final cartTotalPriceProvider = Provider<int>((ref) {
+  final items = ref.watch(cartProvider);
+  return items.values.fold(0, (sum, item) => sum + item.sum);
+});
 
-  // общее число единиц
-  int get totalCount => _items.values.fold(0, (sum, item) => sum + item.qty);
+final cartItemsProvider = Provider<List<CartItem>>((ref) {
+  final items = ref.watch(cartProvider);
+  return List.unmodifiable(items.values);
+});
 
-  // сумма
-  int get totalPrice => _items.values.fold(0, (sum, item) => sum + item.sum);
+final cartQtyProvider = Provider.family.autoDispose<int, String>((
+  ref,
+  productId,
+) {
+  final items = ref.watch(cartProvider);
+  return items[productId]?.qty ?? 0;
+});
 
-  // сколько этого товара в корзине (0 если нет)
-  int qtyOf(String productId) => _items[productId]?.qty ?? 0;
+final cartProvider = NotifierProvider<CartNotifier, Map<String, CartItem>>(
+  CartNotifier.new,
+);
 
-  // +1, или создать позицию
-  void add(Product product) {
-    final existing = _items[product.id];
-    _items[product.id] = existing == null
-        ? CartItem(product: product, qty: 1)
-        : existing.copyWith(qty: existing.qty + 1);
-    notifyListeners();
+// стало: присваиваем новый state, Riverpod сам сравнивает
+class CartNotifier extends Notifier<Map<String, CartItem>> {
+  @override
+  Map<String, CartItem> build() => {};
+
+  //? Свойство в Notifier
+  // int get totalCount => state.values.fold(0, (s, i) => s + i.qty);
+
+  void add(Product p) {
+    final existing = state[p.id];
+    state = {
+      ...state,
+      p.id: existing == null
+          ? CartItem(product: p, qty: 1)
+          : existing.copyWith(qty: existing.qty + 1),
+    };
   }
 
-  // удалить позицию целиком
   void remove(String productId) {
-    _items.remove(productId); // O(1)
-    notifyListeners();
+    if (!state.containsKey(productId)) return;
+    state = {...state}..remove(productId);
   }
 
-  // +1/-1, при 0 — удалить позицию
   void changeQty(String productId, int delta) {
-    final item = _items[productId];
+    final item = state[productId];
     if (item == null) return;
 
     final newQty = item.qty + delta;
     if (newQty <= 0) {
-      _items.remove(productId);
+      remove(productId);
     } else {
-      _items[productId] = item.copyWith(qty: newQty);
+      state = {...state, productId: item.copyWith(qty: newQty)};
     }
-    notifyListeners();
   }
 }
+
+
+
+//   // неизменяемый наружу
+//   List<CartItem> get items => List.unmodifiable(_items.values);
+
+//   // общее число единиц
+//   int get totalCount => _items.values.fold(0, (sum, item) => sum + item.qty);
+
+//   // сумма
+//   int get totalPrice => _items.values.fold(0, (sum, item) => sum + item.sum);
+
+//   // сколько этого товара в корзине (0 если нет)
+//   int qtyOf(String productId) => _items[productId]?.qty ?? 0;
+

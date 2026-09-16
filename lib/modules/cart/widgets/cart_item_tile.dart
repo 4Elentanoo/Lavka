@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lavka_shop/core/models/cart_item_model.dart';
-import 'package:lavka_shop/core/providers/cart_provider.dart';
+import 'package:lavka_shop/core/models/cart_model.dart';
 
 class CartItemTile extends ConsumerWidget {
   const CartItemTile({super.key, required this.item});
@@ -39,12 +39,12 @@ class CartItemTile extends ConsumerWidget {
             ),
           ),
           IconButton(
-            onPressed: () => ref.read(cartProvider).changeQty(product.id, -1),
+            onPressed: () => ref.read(cartProvider.notifier).changeQty(product.id, -1),
             icon: const Icon(Icons.remove),
           ),
           Text('${item.qty}', style: const TextStyle(fontSize: 16)),
           IconButton(
-            onPressed: () => ref.read(cartProvider).changeQty(product.id, 1),
+            onPressed: () => ref.read(cartProvider.notifier).changeQty(product.id, 1),
             icon: const Icon(Icons.add),
           ),
           IconButton(

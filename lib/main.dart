@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lavka_shop/core/providers/cart_provider.dart';
+import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/providers/catalog_provider.dart';
 import 'package:lavka_shop/modules/cart/page/cart_page.dart';
 import 'package:lavka_shop/modules/main_page/widgets/item_cart.dart';
@@ -22,7 +22,7 @@ class CartBadge extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('CartBadge.build');
-    final cart = ref.watch(cartProvider);
+    final cartTotalCount = ref.watch(cartTotalCountProvider);
 
     return SizedBox(
       width: 50,
@@ -37,7 +37,7 @@ class CartBadge extends ConsumerWidget {
             },
             icon: const Icon(Icons.shopping_bag_rounded),
           ),
-          if (cart.totalCount > 0) ...[
+          if (cartTotalCount > 0) ...[
             Align(
               alignment: Alignment.topRight,
               child: Container(
@@ -49,7 +49,7 @@ class CartBadge extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Text(
-                    cart.totalCount > 99 ? '99+' : '${cart.totalCount}',
+                    cartTotalCount > 99 ? '99+' : '$cartTotalCount',
                     style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 ),

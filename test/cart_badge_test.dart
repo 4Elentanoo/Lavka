@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
-import 'package:lavka_shop/core/providers/cart_provider.dart';
 import 'package:lavka_shop/main.dart';
 
 void main() {
@@ -15,41 +14,41 @@ void main() {
     category: 'Напитки',
   );
 
-  Widget wrap(CartModel cart, Widget child) {
-    return ProviderScope(
-      overrides: [
-        cartProvider.overrideWith(
-          (ref) => cart,
-        ), // ← подменяем на свой экземпляр
-      ],
-      child: MaterialApp(home: Scaffold(body: child)),
+  /// Строит виджет и возвращает контейнер провайдеров,
+  /// через который тест читает состояние и вызывает методы.
+  Future<ProviderContainer> pump(WidgetTester tester, Widget child) async {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(home: Scaffold(body: child)),
+      ),
     );
+    return container;
   }
 
   testWidgets('пустая корзина: бейдж не показан', (tester) async {
-    final cart = CartModel();
-
-    await tester.pumpWidget(wrap(cart, const CartBadge()));
+    await pump(tester, const CartBadge());
 
     expect(find.text('1'), findsNothing);
     expect(find.byIcon(Icons.shopping_bag_rounded), findsOneWidget);
   });
 
   testWidgets('после add бейдж показывает 1', (tester) async {
-    final cart = CartModel();
+    final container = await pump(tester, const CartBadge());
 
-    await tester.pumpWidget(wrap(cart, const CartBadge()));
-
-    cart.add(product); // меняем модель
-    await tester.pump(); // прокручиваем кадр
+    container.read(cartProvider.notifier).add(product);
+    await tester.pump();
 
     expect(find.text('1'), findsOneWidget);
   });
 
   testWidgets('после трёх add бейдж показывает 3', (tester) async {
-    final cart = CartModel();
+    final container = await pump(tester, const CartBadge());
 
-    await tester.pumpWidget(wrap(cart, const CartBadge()));
+    final cart = container.read(cartProvider.notifier);
     cart.add(product);
     cart.add(product);
     cart.add(product);
@@ -59,10 +58,10 @@ void main() {
   });
 
   testWidgets('ровно 99 показывается как число, без плюса', (tester) async {
-    final cart = CartModel();
-    await tester.pumpWidget(wrap(cart, const CartBadge()));
+    final container = await pump(tester, const CartBadge());
 
-    for (int i = 0; i < 99; i++) {
+    final cart = container.read(cartProvider.notifier);
+    for (var i = 0; i < 99; i++) {
       cart.add(product);
     }
     await tester.pump();
