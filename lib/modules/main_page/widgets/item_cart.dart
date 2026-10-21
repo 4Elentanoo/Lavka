@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 import 'package:lavka_shop/modules/detail_item_page/detail_item_page.dart';
 
 class ItemCartWidget extends StatelessWidget {

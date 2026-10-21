@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lavka_shop/core/models/cart_model.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 import 'package:lavka_shop/modules/cart/widgets/cart_item_tile.dart';
 
 class CartScreen extends ConsumerWidget {

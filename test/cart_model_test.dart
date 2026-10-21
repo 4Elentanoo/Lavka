@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lavka_shop/core/models/cart_model.dart';
 import 'package:lavka_shop/core/models/product.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 
 void main() {
   const product = Product(

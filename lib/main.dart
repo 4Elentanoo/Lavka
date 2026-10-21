@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lavka_shop/core/models/cart_model.dart';
+import 'package:lavka_shop/core/providers/cart_provider.dart';
 import 'package:lavka_shop/core/providers/catalog_provider.dart';
 import 'package:lavka_shop/modules/cart/page/cart_page.dart';
 import 'package:lavka_shop/modules/main_page/widgets/item_cart.dart';
